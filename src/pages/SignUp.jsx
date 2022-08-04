@@ -4,6 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { ReactComponent as RightArrow } from "../assets/svg/keyboardArrowRightIcon.svg";
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { db } from "../firebase.config";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore"; 
+import { toast } from "react-toastify";
+import GoogleAuth from "../components/GoogleAuth";
+
 
 const SignUp = () => {
 
@@ -33,10 +37,16 @@ const SignUp = () => {
 
             updateProfile(auth.currentUser, {displayName: name})
 
+            const copyFormData = {...formData}
+            delete copyFormData.password
+            copyFormData.timestamp = serverTimestamp()
+
+            await setDoc(doc(db, 'users', user.uid), copyFormData);
+
             navigate('/')
 
         } catch (error) {
-            console.log(error)
+            toast.error("Something Went Wrong with The Registration!")
         }
     }
 
@@ -62,7 +72,7 @@ const SignUp = () => {
                         </button>
                     </div>
                 </form>
-
+                <GoogleAuth />
                 <Link to='/sign-in' className="registerLink">Already Have An Account?</Link>
             </div>
         </>

@@ -1,7 +1,11 @@
 import { useState } from "react";
 import VisibilityIcon from "../assets/svg/visibilityIcon.svg";
-import { Link } from "react-router-dom";  
+import { Link, useNavigate } from "react-router-dom";  
 import { ReactComponent as RightArrow } from "../assets/svg/keyboardArrowRightIcon.svg";  
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { toast } from "react-toastify";
+import GoogleAuth from "../components/GoogleAuth";
+
 
 const SignIn = () => {
 
@@ -10,6 +14,8 @@ const SignIn = () => {
 
     const {email, password} = formData
 
+    const navigate = useNavigate()
+
     const onChange = (e) => {
         setFormData(prevData => ({
             ...prevData,
@@ -17,8 +23,22 @@ const SignIn = () => {
         }))
     }
 
-    const onSubmit = () => {
-        return
+    const onSubmit = async (e) => {
+        e.preventDefault()
+
+        try {
+            const auth = getAuth()
+
+            const userCredential = await signInWithEmailAndPassword(auth, email, password)
+
+            if (userCredential.user) {
+                navigate('/')
+            }
+
+        } catch (error) {
+            toast.error("Bad User Credentials!")
+        }
+
     }
 
     return (
@@ -43,7 +63,7 @@ const SignIn = () => {
                         </button>
                     </div>
                 </form>
-
+                <GoogleAuth />
                 <Link to='/sign-up' className="registerLink">Sign Up Instead</Link>
             </div>
         </>
