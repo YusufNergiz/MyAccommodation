@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { getAuth, updateProfile } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
 
@@ -10,7 +10,7 @@ const Profile = () => {
     const auth = getAuth()
 
     const [changeDetails, setChangeDetails] = useState(false)
-
+    
     const [formData, setFormData] = useState({
         name: auth.currentUser.displayName,
         email: auth.currentUser.email
@@ -30,6 +30,10 @@ const Profile = () => {
 
         try {
             setChangeDetails(prevState => !prevState)
+
+            const docRef = doc(db, 'users', auth.currentUser.uid)
+            const docSnap = await getDoc(docRef)
+
             // Update Name of the user in firebase
             if (auth.currentUser.displayName !== name) {
                 await updateProfile(auth.currentUser, {
@@ -39,7 +43,7 @@ const Profile = () => {
             // Update name of the user in firestore
             const userRef = doc(db, 'users', auth.currentUser.uid)
 
-            await setDoc(userRef, {name: name, email: email})
+            await setDoc(userRef, {name: name, email: email, timestamp: docSnap.data().timestamp})
 
         } catch (error) {
             toast.error("Could not update profile details..")
