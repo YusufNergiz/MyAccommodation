@@ -459,6 +459,7 @@ button {
 @media (min-width: 1024px) {
   .categoryListingDetails {
     width: 79%;
+    margin-left: 25px;
   }
 }
 
@@ -744,6 +745,15 @@ button {
   display: block;
 }
 
+.temporaryClass {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+.submitButtonClass {
+  grid-column: 1/-1;
+}
+
 .formButtons {
   display: flex;
 }
@@ -833,6 +843,7 @@ button {
 .createListingButton {
   margin-top: 5rem;
 }
+
 
 .offers {
   margin-bottom: 10rem;

@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import Spinner from "../components/Spinner";
 import ListingItem from "../components/ListingItem";
 
-const Offers = () => {
+const Categories = () => {
 
     const { categoryName } = useParams()
 
@@ -16,7 +16,7 @@ const Offers = () => {
     useEffect(() => {
         const fetchListing = async () => {
             try {
-                const q = query(collection(db, 'listings'), where('offer', '==', true), orderBy('timestamp', 'desc'), limit(10));
+                const q = query(collection(db, 'listings'), where('type', '==', categoryName), orderBy('timestamp', 'desc'), limit(10));
 
                 const dummyListings = [];
 
@@ -28,7 +28,7 @@ const Offers = () => {
                 setLoading(false)
                 setListings(dummyListings)
             } catch (error) {
-                toast.error("Could not Fetch Offers!")
+                toast.error("Could not Fetch Listings!")
             }
         } 
 
@@ -38,7 +38,7 @@ const Offers = () => {
     return (
         <div className="category">
             <header>
-                <p className="pageHeader">Latest Offers</p>
+                <p className="pageHeader">Properties for {categoryName.charAt(0).toUpperCase() + categoryName.slice(1)}</p>
             </header>
             {loading ? <Spinner /> : listings && listings.length > 0 ? (
                 <>
@@ -50,9 +50,9 @@ const Offers = () => {
                         </ul>
                     </main>
                 </>
-            ): <h3>There are no any offers</h3>}
+            ): <h3>There are no available properties for {categoryName}</h3>}
         </div>
     );
 }
 
-export default Offers;
+export default Categories;
