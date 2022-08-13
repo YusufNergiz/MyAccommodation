@@ -346,7 +346,7 @@ button {
 
 .swiper-container {
   min-height: 225px;
-  height: 23vw;
+  height: 23vw; 
 }
 
 .swiper-pagination-bullet-active {

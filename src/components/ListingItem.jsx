@@ -4,6 +4,8 @@ import bedIcon from '../assets/svg/bedIcon.svg'
 import bathtubIcon from '../assets/svg/bathtubIcon.svg'
 
 const ListingItem = ({listing, id, onDelete}) => {
+
+
     return (
         <li className='categoryListing'>
         <Link

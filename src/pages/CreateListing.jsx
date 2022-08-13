@@ -3,7 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Spinner from "../components/Spinner";
-
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import {db} from '../firebase.config'
+import { async, uuidv4 } from "@firebase/util";
+import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore"; 
 
 
 const CreateListing = () => {
@@ -98,7 +101,6 @@ const CreateListing = () => {
             setLoading(false)
             return
         }
-
         if (images.length > 6) {
             toast.error("Maximum amout of Image upload is 6!")
             setLoading(false)
@@ -128,14 +130,97 @@ const CreateListing = () => {
                 longitude: geolocation.lng
             }
         ))
+
+        const uplaodImage = async (image) => {
+          setLoading(true)
+          return new Promise((resolve, reject) => {
+            const storage = getStorage()
+
+            const metadata = {
+              contentType: 'image/jpeg'
+            };
+
+            const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
+
+            const storageRef = ref(storage, 'images/' + fileName)
+
+            const uploadTask = uploadBytesResumable(storageRef, image, metadata)
+
+            uploadTask.on('state_changed',
+              (snapshot) => {
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log('Upload is ' + progress + '% done');
+                switch (snapshot.state) {
+                  case 'paused':
+                    console.log('Upload is paused');
+                    break;
+                  case 'running':
+                    console.log('Upload is running');
+                    break;
+                }
+              }, 
+              (error) => {
+                reject(error)
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                  case 'storage/unauthorized':
+                    // User doesn't have permission to access the object
+                    break;
+                  case 'storage/canceled':
+                    // User canceled the upload
+                    break;
+
+                  // ...
+
+                  case 'storage/unknown':
+                    // Unknown error occurred, inspect error.serverResponse
+                    break;
+                }
+              }, 
+              () => {
+                // Upload completed successfully, now we can get the download URL
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                  resolve(downloadURL)
+                });
+              }
+            );
+          })
+        }
+
+        const imgUrls = await Promise.all(
+          [...images].map((image) => uplaodImage(image))
+        ).catch(() => {
+          setLoading(false)
+          toast.error("Could not upload Image")
+          return
+        })
+
         
+        const listingDataClone = {
+          ...listingData,
+          geolocation: geolocation,
+          imageUrls: imgUrls,
+          timestamp: serverTimestamp()
+        }
+
+
+        listingDataClone.location = address
+        delete listingDataClone.images
+        !listingDataClone.offer && delete listingDataClone.discountedPrice
+
+
+        const docRef = await addDoc(collection(db, 'listings'), listingDataClone)
+        setLoading(false)
+        toast.success("Listing saved")
+        navigate(`/category/${listingDataClone.type}/${docRef.id}`)
     }
 
     if (loading) {
         return <Spinner />
     }
 
-    console.log(listingData)
 
     return (
         <div className='profile'>
@@ -327,7 +412,7 @@ const CreateListing = () => {
 
           <label className='formLabel'>Images</label>
           <p className='imagesInfo'>
-            The first image will be the cover (max 6).
+            The first image will be the cover (max 6), only jpeg format is allowed.
           </p>
           <input
             className='formInputFile'
