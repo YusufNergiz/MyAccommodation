@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import Spinner from "./Spinner";
 
 const PrivateRoute = () => {
 
@@ -18,7 +19,7 @@ const PrivateRoute = () => {
     }, [])
 
     if (initializing) {
-        return <h1>Loading...</h1>
+        return <Spinner />
     }
     else {
         return (

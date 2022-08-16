@@ -40,7 +40,6 @@ const Slider = () => {
         fetchListings()
     }, [])
 
-    console.log(listings)
     if (loading) {
         return <Spinner />
     }
@@ -60,7 +59,7 @@ const Slider = () => {
                             return <SwiperSlide key={index} onClick={() => navigate(`/category/${listing.data.type}/${listing.id}`)}>
                                 <div style={{background: `url(${listing.data.imageUrls[0]}) center no-repeat`, backgroundSize: 'cover'}} className='swiperSlideDiv'></div>
                                 <p className="swiperSlideText">{listing.data.name}</p>
-                                <p className="swiperSlidePrice">${listing.data.discountedPrice.toString()
+                                <p className="swiperSlidePrice">${listing.data.discountedPrice?.toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ',') ?? listing.data.regularPrice.toString()
                     .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}{listing.data.type === 'rent' && ' / Month'}</p>
                             </SwiperSlide>

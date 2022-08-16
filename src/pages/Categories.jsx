@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, startAfter } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "../firebase.config";
 import { toast } from "react-toastify";
@@ -12,6 +12,7 @@ const Categories = () => {
 
     const [listings, setListings] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [lastListing, setLastListing] = useState(null)
 
     useEffect(() => {
         const fetchListing = async () => {
@@ -21,6 +22,10 @@ const Categories = () => {
                 const dummyListings = [];
 
                 const querySnap = await getDocs(q);
+
+                const lastVisible = querySnap.docs[querySnap.docs.length - 1]
+                setLastListing(lastVisible)
+
                 querySnap.forEach(listing => { dummyListings.push({
                     data: listing.data(),
                     id: listing.id
@@ -34,6 +39,33 @@ const Categories = () => {
 
         fetchListing()
     }, [])    
+
+
+    const loadMore = async () => {
+
+        try {
+            const q = query(collection(db, 'listings'), where('type', '==', categoryName), orderBy('timestamp', 'desc'), limit(10), startAfter(lastListing))
+
+            const dummyListing = []
+
+            const querySnap = await getDocs(q)
+
+            const lastVisible = querySnap.docs[querySnap.docs.length - 1]
+
+            setLastListing(lastVisible)
+
+            querySnap.forEach(listing => {
+                dummyListing.push({
+                    id: listing.id,
+                    data: listing.data()
+                })
+            })
+
+            setListings(prevListings => [...prevListings, ...dummyListing])
+        } catch (error) {
+            toast.info("No more listings available")
+        }
+    }
 
     return (
         <div className="category">
@@ -49,6 +81,8 @@ const Categories = () => {
                             })}
                         </ul>
                     </main>
+
+                    <p className="loadMore" onClick={loadMore}>Load More</p>
                 </>
             ): <h3>There are no available properties for {categoryName}</h3>}
         </div>
