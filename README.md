@@ -1,6 +1,8 @@
 Property sale / rent website
 https://my-accommodation.vercel.app/
 
+React.js, Firebase, HTML, CSS, Leaflet API.
+
 ![](images/explore.PNG)
 ![](images/offers.PNG)
 ![](images/rent.PNG)
